@@ -245,27 +245,33 @@
     </footer>
   </div>
 
-  <!-- 📊 조회수 fetch 스크립트 (NEW) -->
-  <script>
-    (function(){
-      // 세션당 1회만 증가시키기 위해 sessionStorage 사용
-      const hasVisited = sessionStorage.getItem('visited');
-      const url = hasVisited ? '/api/views' : '/api/views?increment=1';
+<!-- 📊 조회수 fetch 스크립트 (수정) -->
+<script>
+  (function(){
+    const hasVisited = sessionStorage.getItem('visited');
 
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          if (data && typeof data.today !== 'undefined') {
-            document.getElementById('todayCount').textContent = data.today.toLocaleString('ko-KR');
-            document.getElementById('totalCount').textContent = data.total.toLocaleString('ko-KR');
-            if (!hasVisited) sessionStorage.setItem('visited', '1');
-          }
-        })
-        .catch(err => {
-          console.log('조회수 로딩 실패:', err);
-        });
-    })();
-  </script>
+    // 세션 첫 방문이면 POST(증가), 아니면 GET(조회만)
+    const options = hasVisited 
+      ? { method: 'GET' } 
+      : { method: 'POST' };
+
+    fetch('/api/views', options)
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.today !== 'undefined') {
+          document.getElementById('todayCount').textContent = data.today.toLocaleString('ko-KR');
+          document.getElementById('totalCount').textContent = data.total.toLocaleString('ko-KR');
+          if (!hasVisited) sessionStorage.setItem('visited', '1');
+        } else if (data && data.error) {
+          console.error('API 에러:', data.error);
+        }
+      })
+      .catch(err => {
+        console.log('조회수 로딩 실패:', err);
+      });
+  })();
+</script>
+
 
   <!-- 🛡️ 난독화 및 보안 스크립트 (수정 금지) -->
   <script>
