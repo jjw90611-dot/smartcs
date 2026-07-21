@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "smartcsp",
+  "compatibility_date": "2026-07-21",
+  "main": "functions/api/views.js",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "VIEWS_KV",
+      "id": "4f4f5337a3ee4cd18c3f2d628291cfd4"
+    }
+  ],
+  "compatibility_flags": ["nodejs_compat"]
+}
