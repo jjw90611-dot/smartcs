@@ -189,11 +189,11 @@
           </div>
           <div class="hint">결합형은 사각 체적과 원통 체적을 합산합니다.</div>
 
-          <!-- 환기팬 용량 및 대수 입력 -->
+          <!-- 환기팬 용량 및 대수 입력 (m³/hr로 변경) -->
           <div class="row">
             <div>
-              <label for="fanCapacity">환기팬 1대당 용량 (m³/min) <span style="font-size:15px; font-weight:normal; color:var(--gray);">(선택)</span></label>
-              <input id="fanCapacity" type="number" min="0" step="0.1" placeholder="예: 200">
+              <label for="fanCapacity">환기팬 1대당 용량 (m³/hr) <span style="font-size:15px; font-weight:normal; color:var(--gray);">(선택)</span></label>
+              <input id="fanCapacity" type="number" min="0" step="1" placeholder="예: 12000">
             </div>
             <div>
               <label for="fanCount">적용 환기팬 대수 (대)</label>
@@ -245,7 +245,7 @@
     </footer>
   </div>
 
-<!-- 📊 조회수 fetch 스크립트 (수정) -->
+<!-- 📊 조회수 fetch 스크립트 -->
 <script>
   (function(){
     const hasVisited = sessionStorage.getItem('visited');
@@ -272,8 +272,7 @@
   })();
 </script>
 
-
-  <!-- 🛡️ 난독화 및 보안 스크립트 (수정 금지) -->
+  <!-- 🛡️ 계산 및 처리 스크립트 -->
   <script>
     (function(){
       const _0x1=(id)=>document.getElementById(id);
@@ -294,20 +293,21 @@
         const shN=sh==="rect"?"사각형":sh==="cyl"?"원통형":"결합형";
         const w=_0x3("w"),l=_0x3("l"),h=_0x3("h"),d=_0x3("d"),wk=_0x3("workers");
 
+        // 환기팬 용량 (m³/hr 기준)
         const fC=_0x4("fanCapacity");
         let fCnt=_0x4("fanCount");
         if(fC!==null&&(fCnt===null||fCnt<=0)) fCnt=1;
-        const tFC=(fC!==null)?fC*fCnt:null;
+        const tFC=(fC!==null)?fC*fCnt:null; // 총 용량 (m³/hr)
 
         const tI=_0x4("temp"),rI=_0x4("rh"),tk=_0x1("task").value.trim();
         if(sN){_0x1("print-title").innerText=`[${sN}] 스마트 밀폐공간 안전설계 결과서`;}
         else{_0x1("print-title").innerText="스마트 밀폐공간 안전설계 결과서";}
 
-        const v=_0xa(sh,w,l,h,d).t;
-        const bQ=v>0?v*0.4:0;
-        const aQ=(tFC!==null&&tFC>0)?tFC:bQ;
-        const pW=v*10;
-        const pT=aQ>0?Math.ceil(pW/aQ):0;
+        const v=_0xa(sh,w,l,h,d).t; // m³
+        const bQ=v>0?v*24:0; // 법적 필요 환기량 Q (m³/hr) = V * 0.4 * 60min
+        const aQ=(tFC!==null&&tFC>0)?tFC:bQ; // m³/hr
+        const pW=v*10; // 작업 전 필요 환기량 (m³)
+        const pT=aQ>0?Math.ceil((pW*60)/aQ):0; // 가동시간(분) = (pW * 60) / aQ
         const isLow=(tFC!==null&&tFC>0&&tFC<bQ);
 
         const hv=_0xb(/(용접|축조|조적|절단|연마|해체|그라인더|중작업|고열|타설|브레이커)/i,tk);
@@ -336,16 +336,16 @@
         rH+=`<section class="result-section"><h2>1. 🌡️ 체감온도 산출 <span class="badge">Predictive Heat Stress</span></h2><p>${hT}</p></section>`;
         rH+=`<section class="result-section"><h2>2. 📐 밀폐공간 체적(Volume) 계산</h2><div class="formula">\n사각형인 경우: V = W × L × H\n원통형인 경우: V = (3.14 × D² / 4) × H\n결합형인 경우 두 체적을 합산하여 최종 체적(m³)을 도출합니다.\n</div>${_kv("공간 형태",shN)}${_kv("최종 체적 V",`${_0x5(v,2)} m³`)}</section>`;
 
-        let s3=`<section class="result-section"><h2>3. 💨 환기량 및 환기팬 가동 시간 계산</h2><h3 style="font-size:16px;color:var(--posco-navy);margin:10px 0;">① 작업 전 환기 (초기 급기)</h3><div class="formula">\n작업 전 필요 환기량 = 체적(V) × 10\n가동 시간(분) = (체적(V) × 10) ÷ 적용 환기팬 총 용량\n</div>${_kv("작업 전 총 필요 환기량",`${_0x5(pW,1)} m³`)}`;
+        let s3=`<section class="result-section"><h2>3. 💨 환기량 및 환기팬 가동 시간 계산</h2><h3 style="font-size:16px;color:var(--posco-navy);margin:10px 0;">① 작업 전 환기 (초기 급기)</h3><div class="formula">\n작업 전 필요 환기량 = 체적(V) × 10\n가동 시간(분) = (체적(V) × 10 × 60) ÷ 적용 환기팬 총 용량(m³/hr)\n</div>${_kv("작업 전 총 필요 환기량",`${_0x5(pW,1)} m³`)}`;
 
-        let fC_str = tFC ? `${_0x5(fC,1)} m³/min × ${_0x6(fCnt)}대 = ${_0x5(tFC,1)} m³/min` : `${_0x5(bQ,1)} m³/min (최소 기준)`;
+        let fC_str = tFC ? `${_0x5(fC,1)} m³/hr × ${_0x6(fCnt)}대 = ${_0x5(tFC,1)} m³/hr` : `${_0x5(bQ,1)} m³/hr (최소 기준)`;
 
         if(isLow){
-          s3+=`${_kv("적용 환기팬 총 용량",`<span style="color:var(--danger);font-weight:bold;">${fC_str} (사용 불가)</span>`)}${_kv("최소 가동 시간",`<span style="color:var(--danger);font-weight:bold;">산출 불가</span>`)}${_mN("danger",`⚠️ <strong>사용 불가:</strong> 적용하신 환기팬 총 용량(${_0x5(tFC,1)} m³/min)이 작업 중 법적 필요 환기량(${_0x5(bQ,1)} m³/min)보다 낮습니다. 대수를 늘리거나 용량이 큰 환기팬을 적용해 주십시오.`)}`;
+          s3+=`${_kv("적용 환기팬 총 용량",`<span style="color:var(--danger);font-weight:bold;">${fC_str} (사용 불가)</span>`)}${_kv("최소 가동 시간",`<span style="color:var(--danger);font-weight:bold;">산출 불가</span>`)}${_mN("danger",`⚠️ <strong>사용 불가:</strong> 적용하신 환기팬 총 용량(${_0x5(tFC,1)} m³/hr)이 작업 중 법적 필요 환기량(${_0x5(bQ,1)} m³/hr)보다 낮습니다. 대수를 늘리거나 용량이 큰 환기팬을 적용해 주십시오.`)}`;
         }else{
-          s3+=`${_kv("적용 환기팬 총 용량",fC?`<strong>${fC_str}</strong>`:fC_str)}${_kv("최소 가동 시간",`<strong>${_0x6(pT)} 분</strong>`)}${v>0?_mN("safe",`작업 시작 전, 총 ${tFC?_0x5(tFC,1):_0x5(bQ,1)} m³/min 용량의 환기팬으로 <strong>최소 ${_0x6(pT)}분 이상</strong> 급기하여 총 ${_0x5(pW,1)} m³의 공기를 환기하십시오.`):""}`;
+          s3+=`${_kv("적용 환기팬 총 용량",fC?`<strong>${fC_str}</strong>`:fC_str)}${_kv("최소 가동 시간",`<strong>${_0x6(pT)} 분</strong>`)}${v>0?_mN("safe",`작업 시작 전, 총 ${tFC?_0x5(tFC,1):_0x5(bQ,1)} m³/hr 용량의 환기팬으로 <strong>최소 ${_0x6(pT)}분 이상</strong> 급기하여 총 ${_0x5(pW,1)} m³의 공기를 환기하십시오.`):""}`;
         }
-        s3+=`<h3 style="font-size:16px;color:var(--posco-navy);margin:20px 0 10px;">② 작업 중 환기 (전체 환기)</h3><div class="formula">\n법적 필요 환기량 Q (m³/min) = 체적(V) × 0.4\n</div>${_kv("법적 필요 환기량 Q",`${_0x5(bQ,1)} m³/min`)}${v>0?_mN("info",`최소 ${_0x5(bQ,1)} m³/min 이상의 용량을 가진 환기팬을 가동하십시오.`):""}</section>`;
+        s3+=`<h3 style="font-size:16px;color:var(--posco-navy);margin:20px 0 10px;">② 작업 중 환기 (전체 환기)</h3><div class="formula">\n법적 필요 환기량 Q (m³/hr) = 체적(V) × 24\n</div>${_kv("법적 필요 환기량 Q",`${_0x5(bQ,1)} m³/hr`)}${v>0?_mN("info",`최소 ${_0x5(bQ,1)} m³/hr 이상의 용량을 가진 환기팬을 가동하십시오.`):""}</section>`;
         rH+=s3;
 
         rH+=`<section class="result-section"><h2>4. ❄️ 국소냉방(Spot Cooling) 필요 열량(kcal/h) 계산</h2><div class="formula">\nQ_spot (kcal/h) = 동시 작업자 수 × 1인당 필요 부하\n</div>${_kv("작업 내용",tk?_0x7(tk):"미입력")}${_kv("총 필요 냉방 능력",`${_0x6(sL)} kcal/h`)}${wk>0?_mN("info",`총 필요 냉방 능력은 ${_0x6(sL)} kcal/h 입니다. 현장 보유 스포트쿨러 용량(예: 5,100 또는 6,150 kcal/h)으로 나누어 적정 대수를 산정하십시오.`):""}${_mN("warning","⚠️ 실무 가이드: 스포트쿨러 본체는 외부에 두고 토출 덕트만 내부로 연장하여 Cool Zone을 형성하십시오.")}</section>`;
